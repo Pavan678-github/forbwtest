@@ -1,0 +1,15 @@
+node('master') {
+
+stage('Checkout'){
+checkout([$class: 'GitSCM', 
+    branches: [[name: env.Branch]],
+    userRemoteConfigs: [[credentialsId: 'MahendraZod-Bitbucket-Cred',
+    url: 'https://bitbucket.org/bwrcalm/bwr-calm-2021.git']]])
+}
+
+stage('Git tag'){
+    withCredentials([usernamePassword(credentialsId: 'MahendraZod-Bitbucket-Cred', passwordVariable: 'Git_password', usernameVariable: 'Git_username')]) {
+      sh("git tag -a CALMRelease_${CALM_RELEASE_VERSION}_${BUILD_TIMESTAMP} -m 'Tag for production release ${CALM_RELEASE_VERSION}'")
+      echo env.Git_username
+      echo env.Git_password
+      sh("git push https://${env.Git_username}:${env.Git_password}@bitbucket.org/bwrcalm/bwr-calm-2021.git --tags")
